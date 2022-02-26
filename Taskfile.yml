@@ -27,7 +27,6 @@ tasks:
   build:
     desc: build current os
     cmds:
-      - rm -rf {{.output}}
       - mkdir -p {{.output}}
       - go build -o {{.output}} .
 
