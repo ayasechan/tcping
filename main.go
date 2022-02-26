@@ -21,7 +21,8 @@ func main() {
 
 func run() error {
 	app := &cli.App{
-		Name: "tcping",
+		Name:      "tcping",
+		UsageText: "tcping <domain> [port]",
 		Action: func(c *cli.Context) error {
 			if c.NArg() == 0 {
 				cli.ShowAppHelp(c)
@@ -66,7 +67,7 @@ func run() error {
 						min = dur
 					}
 
-					text = fstring(`from {domain}({ip}): seq={seq} time={ms} ms`, map[string]interface{}{
+					text = fstring(`from {domain}({ip}): seq={seq} time={ms}`, map[string]interface{}{
 						"domain": domain,
 						"ip":     ip,
 						"seq":    seq,
@@ -86,7 +87,7 @@ func run() error {
 						"loss":  loss,
 					})
 					fmt.Println(text)
-					text = `rtt min/avg/max = {min}/{avg}/{max} ms`
+					text = `rtt min/avg/max = {min}/{avg}/{max}`
 					if count != 0 {
 						avg = sum / time.Duration(count)
 					}
@@ -141,8 +142,8 @@ func fstring(text string, m map[string]interface{}) string {
 		case float32, float64:
 			_m[k] = fmt.Sprintf("%f", v)
 		case time.Duration:
-			_m[k] = fmt.Sprintf("%d", v.Milliseconds())
-		case net.IP:
+			_m[k] = fmt.Sprintf("%d ms", v.Milliseconds())
+		case fmt.Stringer:
 			_m[k] = v.String()
 		default:
 			_m[k] = fmt.Sprintf("%v", v)
