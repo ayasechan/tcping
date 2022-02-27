@@ -44,6 +44,11 @@ func run() error {
 			for {
 				select {
 				case <-ticker.C:
+					select {
+					case <-sig:
+						break loop
+					default:
+					}
 					seq += 1
 					dur, err := tcping(fmt.Sprintf("%s:%s", domain, port))
 					if err != nil {
@@ -74,33 +79,33 @@ func run() error {
 						"ms":     dur,
 					})
 					fmt.Println(text)
-
 				case <-sig:
-					text = `--- {domain} tcping statistics ---`
-					text = fstring(text, map[string]interface{}{"domain": domain})
-					fmt.Println(text)
-					loss := (seq - count) * 100 / seq
-					text = `{seq} packets transmitted, {count} received, {loss}% packet loss`
-					text = fstring(text, map[string]interface{}{
-						"seq":   seq,
-						"count": count,
-						"loss":  loss,
-					})
-					fmt.Println(text)
-					text = `rtt min/avg/max = {min}/{avg}/{max}`
-					if count != 0 {
-						avg = sum / time.Duration(count)
-					}
-					text = fstring(text, map[string]interface{}{
-						"min": min,
-						"avg": avg,
-						"max": max,
-					})
-					fmt.Println(text)
 					break loop
 				}
 			}
 
+			fmt.Println("")
+			text = `--- {domain} tcping statistics ---`
+			text = fstring(text, map[string]interface{}{"domain": domain})
+			fmt.Println(text)
+			loss := (seq - count) * 100 / seq
+			text = `{seq} packets transmitted, {count} received, {loss}% packet loss`
+			text = fstring(text, map[string]interface{}{
+				"seq":   seq,
+				"count": count,
+				"loss":  loss,
+			})
+			fmt.Println(text)
+			text = `rtt min/avg/max = {min}/{avg}/{max}`
+			if count != 0 {
+				avg = sum / time.Duration(count)
+			}
+			text = fstring(text, map[string]interface{}{
+				"min": min,
+				"avg": avg,
+				"max": max,
+			})
+			fmt.Println(text)
 			return nil
 		},
 	}
