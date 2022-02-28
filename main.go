@@ -52,7 +52,8 @@ func run() error {
 					seq += 1
 					dur, err := tcping(fmt.Sprintf("%s:%s", domain, port))
 					if err != nil {
-						text = fstring(`from {domain}({ip}): {err}`, map[string]interface{}{
+						text = fstring(`from {domain}({ip}): seq={seq} {err}`, map[string]interface{}{
+							"seq":    seq,
 							"domain": domain,
 							"ip":     ip,
 							"err":    err,
@@ -139,7 +140,11 @@ func fstring(text string, m map[string]interface{}) string {
 	for k, v := range m {
 		switch v := v.(type) {
 		case error:
-			_m[k] = v.Error()
+			if opErr, ok := v.(*net.OpError); ok {
+				_m[k] = opErr.Err.Error()
+			} else {
+				_m[k] = v.Error()
+			}
 		case string:
 			_m[k] = v
 		case int, int64:
